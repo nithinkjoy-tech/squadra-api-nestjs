@@ -1,10 +1,3 @@
-import {
-  IsEmpty,
-  IsEnum,
-  IsNotEmpty,
-  IsNumber,
-  IsString,
-} from 'class-validator';
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { UserState } from '../dto/create-user.dto';
 
@@ -12,33 +5,23 @@ import { UserState } from '../dto/create-user.dto';
   timestamps: true,
 })
 export class User {
-  @IsNotEmpty()
-  @IsString()
-  @Prop()
-  firstName: string;
+  @Prop({ required: true, minlength: 1, match: /^[A-Za-z]+$/ })
+  readonly firstName: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @Prop()
-  lastName: string;
+  @Prop({ required: true })
+  readonly lastName: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @Prop()
-  email: string;
+  @Prop({ required: true })
+  readonly email: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @Prop()
-  phoneNumber: string;
+  @Prop({ required: true })
+  readonly phoneNumber: string;
 
-  @IsNotEmpty()
-  @IsString()
-  @Prop()
-  companyName: string;
+  @Prop({ required: true })
+  readonly companyName: string;
 
-  @Prop()
-  userState: UserState;
+  @Prop({ enum: UserState, default: UserState.ACTIVE })
+  readonly userState: UserState;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
