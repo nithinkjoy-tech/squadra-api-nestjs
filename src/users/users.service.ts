@@ -94,52 +94,60 @@ export class UsersService {
     };
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async update(id: string, updateUser: UpdateUserDto) {
+    const userId = id;
+    const user = await this.UserSchema.findById(userId);
+
+    if (user) {
+      const { email, phoneNumber } = updateUser;
+      const existingUser = await this.UserSchema.findOne({
+        $or: [{ email }, { phoneNumber }],
+      })
+        .where('_id')
+        .ne(userId)
+        .select({
+          email: 1,
+          phoneNumber: 1,
+        });
+
+      if (existingUser) {
+        if (existingUser.email === email) {
+          throw new HttpException(
+            {
+              property: 'emial',
+              message: 'User with given email ID already exist',
+            },
+            HttpStatus.CONFLICT,
+          );
+        }
+
+        if (existingUser.phoneNumber === phoneNumber) {
+          throw new HttpException(
+            {
+              property: 'phoneNumber',
+              message: 'User with given phone number already exist',
+            },
+            HttpStatus.CONFLICT,
+          );
+        }
+      }
+      return await user.set(updateUser).save();
+    } else {
+      throw new HttpException(
+        'User with given ID not found',
+        HttpStatus.CONFLICT,
+      );
+    }
   }
 
-  update(id: string, updateUserDto: UpdateUserDto) {
-    // let user;
-    // let userId = req?.params?.id;
-    // if (!mongoose.Types.ObjectId.isValid(userId))
-    //   return res.status(400).send('Invalid ID');
-    // user = await User.findById(userId);
+  async remove(id: string) {
+    const removed = await this.UserSchema.findByIdAndDelete(id);
+    if (!removed)
+      throw new HttpException(
+        'User with given ID not found',
+        HttpStatus.NOT_FOUND,
+      );
 
-    // if (user) {
-    //   const { email, phoneNumber } = req.body;
-    //   const existingUser = await User.findOne({
-    //     $or: [{ email }, { phoneNumber }],
-    //   })
-    //     .where('_id')
-    //     .ne(userId)
-    //     .select({
-    //       email: 1,
-    //       phoneNumber: 1,
-    //     });
-
-    //   if (existingUser) {
-    //     if (existingUser.email === email) {
-    //       return res.status(409).send({
-    //         property: 'email',
-    //         message: 'User with the given email ID already exists',
-    //       });
-    //     }
-
-    //     if (existingUser.phoneNumber === phoneNumber) {
-    //       return res.status(409).send({
-    //         property: 'phoneNumber',
-    //         message: 'User with the given phone number already exists',
-    //       });
-    //     }
-    //   }
-    //   let updated = await user.set(req.body).save();
-    //   res.send(updated);
-    // } else {
-    //   res.status(404).send('User with given ID not found');
-    // }
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+    return removed;
   }
 }

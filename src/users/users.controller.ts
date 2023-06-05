@@ -28,11 +28,6 @@ export class UsersController {
     return this.usersService.findAll(query);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
-  }
-
   @Put(':id')
   update(
     @Param('id', new ValidateObjectIdPipe()) id: string,
@@ -42,7 +37,7 @@ export class UsersController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
+  remove(@Param('id', new ValidateObjectIdPipe()) id: string) {
+    return this.usersService.remove(id);
   }
 }
